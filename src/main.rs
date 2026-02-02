@@ -8,9 +8,10 @@ use axum::{Json, Router, extract::State, routing::get};
 use tokio::time::sleep;
 use tracing::level_filters::LevelFilter;
 use worldstate_parser::{
-    default_context_provider::DefaultContextProvider,
-    default_context_provider::PathContext,
-    worldstate::{self, WorldState, WorldstateError},
+    WorldState,
+    WorldstateError,
+    default_context_provider::{DefaultContextProvider, PathContext},
+    default_data_fetcher::{self, CacheStrategy},
 };
 
 async fn fetch_worldstate_json(client: &reqwest::Client) -> Result<String, reqwest::Error> {
@@ -23,14 +24,13 @@ async fn fetch_worldstate_json(client: &reqwest::Client) -> Result<String, reqwe
 }
 
 async fn get_worldstate(json: String) -> Result<WorldState, WorldstateError> {
-    worldstate::from_str(
+    WorldState::from_str(
         &json,
-        DefaultContextProvider,
-        PathContext {
+        DefaultContextProvider(PathContext {
             data_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("data/"),
             drops_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("drops/"),
             assets_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/"),
-        },
+        }),
     )
     .await
 }
@@ -108,6 +108,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
         .with_max_level(LevelFilter::INFO)
         .init();
+
+    default_data_fetcher::fetch_all(CacheStrategy::Basic).await?;
 
     let client = reqwest::Client::new();
 
