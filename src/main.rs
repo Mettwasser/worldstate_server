@@ -44,47 +44,18 @@ async fn spawn_worldstate_fetcher(
         sleep(Duration::from_mins(5)).await;
 
         let Ok(json) = fetch_worldstate_json(&client).await else {
-            sleep(Duration::from_mins(5)).await;
             continue;
         };
 
         let Ok(worldstate) = get_worldstate(json).await else {
-            sleep(Duration::from_mins(5)).await;
             continue;
         };
 
         let mut old_worldstate = shared_worldstate.write().unwrap();
         tracing::info!("fetcher: Fetched new worldstate.");
 
-        if old_worldstate.fissures != worldstate.fissures {
-            tracing::info!(
-                "Old fissures: {:?}",
-                old_worldstate
-                    .fissures
-                    .iter()
-                    .map(|f| format!(
-                        "{} | {}",
-                        f.node.as_ref().unwrap().name,
-                        f.node.as_ref().unwrap().planet
-                    ))
-                    .collect::<Vec<_>>()
-            );
-
-            tracing::info!(
-                "New fissures: {:?}",
-                worldstate
-                    .fissures
-                    .iter()
-                    .map(|f| format!(
-                        "{} | {}",
-                        f.node.as_ref().unwrap().name,
-                        f.node.as_ref().unwrap().planet
-                    ))
-                    .collect::<Vec<_>>()
-            );
-        }
         tracing::info!(
-            "Fissures match: {}",
+            "Fissures changed? {}",
             worldstate.fissures == old_worldstate.fissures
         );
 
@@ -101,6 +72,12 @@ async fn worldstate_handler(
     State(shared_worldstate): State<Arc<RwLock<WorldState>>>,
 ) -> Json<WorldState> {
     Json(shared_worldstate.read().unwrap().clone())
+}
+
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c()
+        .await
+        .expect("failed to install CTRL+C handler");
 }
 
 #[tokio::main]
@@ -127,7 +104,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_state(shared_worldstate);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
-    axum::serve(listener, app).await?;
+
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
 
     Ok(())
 }

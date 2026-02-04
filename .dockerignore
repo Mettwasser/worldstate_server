@@ -1,0 +1,8 @@
+target
+Dockerfile
+.git
+.vscode
+drops
+data
+cache
+assets
