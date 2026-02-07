@@ -5,6 +5,7 @@ use std::{
 };
 
 use axum::{Json, Router, extract::State, routing::get};
+use reqwest::{Proxy, header};
 use tokio::time::sleep;
 use tracing::level_filters::LevelFilter;
 use worldstate_parser::{
@@ -88,7 +89,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     default_data_fetcher::fetch_all(CacheStrategy::Basic).await?;
 
-    let client = reqwest::Client::new();
+    let proxy_url = format!(
+        "http://{}:{}@{}:{}",
+        std::env::var("PROXY_USER").expect("PROXY_USER must be set"),
+        std::env::var("PROXY_PASS").expect("PROXY_PASS must be set"),
+        std::env::var("PROXY_HOST").expect("PROXY_HOST must be set"),
+        std::env::var("PROXY_PORT").expect("PROXY_PORT must be set"),
+    );
+
+    let mut headers = header::HeaderMap::new();
+    headers.insert(
+        header::USER_AGENT,
+        header::HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    );
+    headers.insert(
+        header::ACCEPT,
+        header::HeaderValue::from_static("application/json"),
+    );
+
+    let client = reqwest::Client::builder()
+        .proxy(Proxy::all(proxy_url)?)
+        .default_headers(headers)
+        .build()?;
 
     let json = fetch_worldstate_json(&client).await?;
 

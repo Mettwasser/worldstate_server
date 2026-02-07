@@ -6,3 +6,4 @@ drops
 data
 cache
 assets
+.env
