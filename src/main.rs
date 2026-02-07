@@ -24,14 +24,20 @@ async fn fetch_worldstate_json(client: &reqwest::Client) -> Result<String, reqwe
         .await
 }
 
-async fn get_worldstate(json: String) -> Result<WorldState, WorldstateError> {
+async fn get_worldstate(
+    json: String,
+    client: &reqwest::Client,
+) -> Result<WorldState, WorldstateError> {
     WorldState::from_str(
         &json,
-        DefaultContextProvider(PathContext {
-            data_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("data/"),
-            drops_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("drops/"),
-            assets_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/"),
-        }),
+        DefaultContextProvider(
+            PathContext {
+                data_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("data/"),
+                drops_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("drops/"),
+                assets_dir: &Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/"),
+            },
+            client,
+        ),
     )
     .await
 }
@@ -48,7 +54,7 @@ async fn spawn_worldstate_fetcher(
             continue;
         };
 
-        let Ok(worldstate) = get_worldstate(json).await else {
+        let Ok(worldstate) = get_worldstate(json, &client).await else {
             continue;
         };
 
@@ -114,7 +120,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let json = fetch_worldstate_json(&client).await?;
 
-    let shared_worldstate = Arc::new(RwLock::new(get_worldstate(json).await?));
+    let shared_worldstate = Arc::new(RwLock::new(get_worldstate(json, &client).await?));
 
     tokio::spawn(spawn_worldstate_fetcher(
         Arc::clone(&shared_worldstate),
