@@ -96,7 +96,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     default_data_fetcher::fetch_all(CacheStrategy::Basic).await?;
 
     let proxy_url = format!(
-        "http://{}:{}@{}:{}",
+        "https://{}:{}@{}:{}",
         std::env::var("PROXY_USER").expect("PROXY_USER must be set"),
         std::env::var("PROXY_PASS").expect("PROXY_PASS must be set"),
         std::env::var("PROXY_HOST").expect("PROXY_HOST must be set"),
@@ -116,6 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder()
         .proxy(Proxy::all(proxy_url)?)
         .default_headers(headers)
+        .danger_accept_invalid_certs(true)
         .build()?;
 
     let json = fetch_worldstate_json(&client).await?;
