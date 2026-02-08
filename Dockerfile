@@ -11,13 +11,13 @@ COPY --from=planner /app/recipe.json recipe.json
 
 RUN --mount=type=cache,id=s/a78cea9a-7483-49fd-82e7-d477096ec982-/usr/local/cargo/registry,target=/usr/local/cargo/registry \
     --mount=type=cache,id=s/a78cea9a-7483-49fd-82e7-d477096ec982-/app/target,target=/app/target \
-    cargo chef cook --release --recipe-path recipe.json
+    cargo chef cook --release --features proxy --recipe-path recipe.json
 
 COPY . .
 
 RUN --mount=type=cache,id=s/a78cea9a-7483-49fd-82e7-d477096ec982-/usr/local/cargo/registry,target=/usr/local/cargo/registry \
     --mount=type=cache,id=s/a78cea9a-7483-49fd-82e7-d477096ec982-/app/target,target=/app/target \
-    cargo build --release --bin worldstate_server && \
+    cargo build --release --features proxy --bin worldstate_server && \
     cp /app/target/release/worldstate_server /app/worldstate_server
 
 FROM debian:bookworm-slim AS runtime
