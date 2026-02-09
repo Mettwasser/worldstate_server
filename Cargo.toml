@@ -8,7 +8,6 @@ proxy = []
 
 [dependencies]
 axum = "0.8.8"
-# ... existing dependencies ...
 reqwest = "0.13.2"
 tokio = { version = "1.49.0", features = [
     "rt-multi-thread",
