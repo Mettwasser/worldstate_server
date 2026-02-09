@@ -25,7 +25,7 @@ pub async fn worldstate(
     ),
     tag = "worldstate"
 )]
-pub async fn fissure(
+pub async fn fissures(
     State(shared_worldstate): State<Arc<RwLock<WorldState>>>,
 ) -> Json<Vec<Fissure>> {
     Json(shared_worldstate.read().unwrap().fissures.clone())

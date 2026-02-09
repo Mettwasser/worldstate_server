@@ -4,14 +4,18 @@ pub mod worldstate;
 use std::sync::{Arc, RwLock};
 
 use axum::{Router, routing::get};
-use reqwest::header;
 #[cfg(feature = "proxy")]
-use reqwest::{ClientBuilder, Proxy};
+use reqwest::{ClientBuilder, Proxy, header};
 use tracing::level_filters::LevelFilter;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 use worldstate_parser::{
-    cycles::duviri::DuviriState,
+    cycles::{
+        cambion_drift::CambionDriftState,
+        cetus::CetusState,
+        duviri::DuviriState,
+        orb_vallis::OrbVallisState,
+    },
     default_data_fetcher::{self, CacheStrategy},
 };
 
@@ -22,7 +26,7 @@ use crate::worldstate::{fetch_worldstate_json, get_worldstate, spawn_worldstate_
 #[derive(OpenApi)]
 #[openapi(
     components(
-        schemas(worldstate_parser::WorldState, DuviriState)
+        schemas(worldstate_parser::WorldState, DuviriState, CetusState, CambionDriftState, OrbVallisState)
     ),
     tags(
         (name = "worldstate", description = "Warframe Worldstate API")
@@ -51,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/", get(handlers::worldstate))
-        .route("/fissure", get(handlers::fissure))
+        .route("/fissures", get(handlers::fissures))
         .with_state(shared_worldstate)
         .merge(SwaggerUi::new("/docs").url("/apidoc/openapi.json", ApiDoc::openapi()));
 
