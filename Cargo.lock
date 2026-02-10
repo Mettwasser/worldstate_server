@@ -2453,7 +2453,7 @@ checksum = "d7249219f66ced02969388cf2bb044a09756a083d0fab1e566056b04d9fbcaa5"
 [[package]]
 name = "worldstate_parser"
 version = "0.1.0"
-source = "git+https://github.com/Mettwasser/worldstate_parser.git#88a2794230c79e0b817fa24098a679903aba9a59"
+source = "git+https://github.com/WFCD/worldstate_parser_rs.git#88a2794230c79e0b817fa24098a679903aba9a59"
 dependencies = [
  "chrono",
  "derive_more",
