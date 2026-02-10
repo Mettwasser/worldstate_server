@@ -22,9 +22,11 @@ use worldstate_parser::{
 use crate::worldstate::{fetch_worldstate_json, get_worldstate, spawn_worldstate_fetcher};
 
 /// OpenAPI Doc
-#[utoipauto::utoipauto]
 #[derive(OpenApi)]
 #[openapi(
+    paths(
+        handlers::worldstate, handlers::fissures,        
+    ),
     components(
         schemas(worldstate_parser::WorldState, DuviriState, CetusState, CambionDriftState, OrbVallisState)
     ),

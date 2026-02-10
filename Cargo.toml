@@ -23,4 +23,3 @@ worldstate_parser = { git = "https://github.com/WFCD/worldstate_parser_rs.git", 
 ] }
 utoipa = { version = "5.4.0", features = ["axum_extras", "chrono"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum", "reqwest"] }
-utoipauto = "=0.3.0-alpha.2"
